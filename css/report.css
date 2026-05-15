@@ -1,0 +1,108 @@
+body {
+    background: #050505;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+}
+a { color: #bb86fc; }
+a:hover { color: #d0a6ff; }
+
+h1 { color: #fff; margin-bottom: 0.3em; }
+
+.stats {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+.stat {
+    flex: 1;
+    min-width: 150px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 15px 20px;
+    border-left: 4px solid #444;
+}
+.stat.total { border-color: #bb86fc; }
+.stat.success { border-color: #2ecc71; }
+.stat.error { border-color: #e74c3c; }
+.stat h3 { margin: 0; font-size: 13px; text-transform: uppercase; color: #999; }
+.stat p { margin: 5px 0 0; font-size: 28px; font-weight: bold; color: #fff; }
+
+.rates-info {
+    background: #1e1e1e;
+    padding: 8px 15px;
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 14px;
+    margin: 10px 0;
+}
+.rates-error {
+    color: #e74c3c;
+    font-style: italic;
+}
+
+.filters {
+    margin: 20px 0;
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 10px;
+}
+.filters form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.filters select, .filters input {
+    padding: 8px 12px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #0d0d0d;
+    color: #ddd;
+}
+.filters button {
+    background: #bb86fc;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.filters a {
+    background: #333;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #ddd;
+    text-decoration: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #111;
+    margin-top: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+th {
+    background: #1e1e1e;
+    padding: 12px 8px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #aaa;
+}
+td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #2a2a2a;
+    vertical-align: middle;
+}
+tr.row-error td {
+    background: #1f1111;
+}
+td .error-text {
+    color: #ff5555;
+}

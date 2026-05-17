@@ -1,8 +1,15 @@
 <?php
 require 'vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+$dotenv->safeLoad();
 require 'function.php';
+
+if (!function_exists('h')) {
+    function h($value): string
+    {
+        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
 
 $fields = getLeadFields();
 ?>
@@ -34,9 +41,9 @@ $fields = getLeadFields();
                 <tbody>
                     <?php foreach ($fields as $fieldId => $field): ?>
                     <tr>
-                        <td><?= htmlspecialchars($fieldId) ?></td>
-                        <td><?= htmlspecialchars($field['title'] ?? '') ?></td>
-                        <td><?= htmlspecialchars($field['type'] ?? '') ?></td>
+                        <td><?= h($fieldId) ?></td>
+                        <td><?= h($field['title'] ?? '') ?></td>
+                        <td><?= h($field['type'] ?? '') ?></td>
                         <td><?= !empty($field['isRequired']) ? 'Да' : 'Нет' ?></td>
                         <td><?= !empty($field['isReadOnly']) ? 'Да' : 'Нет' ?></td>
                     </tr>

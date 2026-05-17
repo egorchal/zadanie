@@ -1,10 +1,18 @@
 <?php
 require 'vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+$dotenv->safeLoad();
 require 'function.php';
 
-$bitrix24_domain = $_ENV['BITRIX24_DOMAIN'] ?? 'your-domain.bitrix24.ru';
+if (!function_exists('h')) {
+    function h($value): string
+    {
+        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+
+$bitrix24_domain = $_ENV['BITRIX24_WEBHOOK_LEAD'];
+
 $rates = getCurrencyRates();
 
 // Читаем список лидов
@@ -16,7 +24,7 @@ if (file_exists($filePath)) {
 
 // Сортировка по дате (новые сверху)
 usort($leads, function($a, $b) {
-    return strtotime($b['TIMESTAMP']) - strtotime($a['TIMESTAMP']);
+    return strtotime($b['TIMESTAMP'] ?? '') - strtotime($a['TIMESTAMP'] ?? '');
 });
 
 // Фильтры
@@ -62,7 +70,7 @@ sort($sources);
 </div>
 
 <?php if ($rates): ?>
-    <p class="rates-info">Курсы ЦБ РФ на <?= htmlspecialchars($rates['Date']) ?>: USD = <?= $rates['USD'] ?> ₽, EUR = <?= $rates['EUR'] ?> ₽</p>
+    <p class="rates-info">Курсы ЦБ РФ на <?= h($rates['Date'] ?? '') ?>: USD = <?= h($rates['USD'] ?? '') ?> ₽, EUR = <?= h($rates['EUR'] ?? '') ?> ₽</p>
 <?php else: ?>
     <p class="rates-error">⚠ Курсы валют недоступны. Суммы в валюте не будут рассчитаны.</p>
 <?php endif; ?>
@@ -72,10 +80,10 @@ sort($sources);
         <select name="source">
             <option value="">Все источники</option>
             <?php foreach ($sources as $s): ?>
-                <option <?= $filter_source === $s ? 'selected' : '' ?>><?= htmlspecialchars($s) ?></option>
+                <option value="<?= h($s) ?>" <?= $filter_source === $s ? 'selected' : '' ?>><?= h($s) ?></option>
             <?php endforeach; ?>
         </select>
-        <input type="text" name="search" placeholder="Имя, телефон или email" value="<?= htmlspecialchars($search_query) ?>">
+        <input type="text" name="search" placeholder="Имя, телефон или email" value="<?= h($search_query) ?>">
         <button type="submit">Применить</button>
         <a href="report.php">Сбросить</a>
     </form>
@@ -107,27 +115,27 @@ sort($sources);
             <?php
             $amount = $lead['AMOUNT_RUB'] ?? null;
             $usd = $eur = '';
-            if ($amount !== null && $rates) {
+            if ($amount !== null && $rates && !empty($rates['USD']) && !empty($rates['EUR'])) {
                 $usd = round($amount / $rates['USD'], 2);
                 $eur = round($amount / $rates['EUR'], 2);
             }
             ?>
             <tr class="<?= ($lead['STATUS'] ?? '') === 'error' ? 'row-error' : '' ?>">
-                <td><?= htmlspecialchars($lead['LOCAL_ID']) ?></td>
-                <td><?= $lead['BITRIX_ID'] ?: '—' ?></td>
-                <td><?= htmlspecialchars($lead['NAME']) ?></td>
-                <td><?= htmlspecialchars($lead['PHONE']) ?></td>
-                <td><?= htmlspecialchars($lead['EMAIL']) ?></td>
-                <td><?= htmlspecialchars($lead['SOURCE']) ?></td>
-                <td><?= htmlspecialchars($lead['TIMESTAMP']) ?></td>
+                <td><?= h($lead['LOCAL_ID'] ?? '') ?></td>
+                <td><?= !empty($lead['BITRIX_ID']) ? h($lead['BITRIX_ID']) : '—' ?></td>
+                <td><?= h($lead['NAME'] ?? '') ?></td>
+                <td><?= h($lead['PHONE'] ?? '') ?></td>
+                <td><?= h($lead['EMAIL'] ?? '') ?></td>
+                <td><?= h($lead['SOURCE'] ?? '') ?></td>
+                <td><?= h($lead['TIMESTAMP'] ?? '') ?></td>
                 <td><?= $amount !== null ? number_format($amount, 2, ',', ' ') . ' ₽' : '—' ?></td>
                 <td><?= $usd !== '' ? '$' . number_format($usd, 2, '.', ' ') : '—' ?></td>
                 <td><?= $eur !== '' ? '€' . number_format($eur, 2, '.', ' ') : '—' ?></td>
                 <td><?= ($lead['STATUS'] ?? '') === 'success' ? '✅ Успешно' : '❌ Ошибка' ?></td>
-                <td><?= !empty($lead['ERROR']) ? htmlspecialchars($lead['ERROR']) : '—' ?></td>
+                <td><?= !empty($lead['ERROR']) ? h($lead['ERROR']) : '—' ?></td>
                 <td>
-                    <?php if ($lead['BITRIX_ID']): ?>
-                        <a href="https://<?= htmlspecialchars($bitrix24_domain) ?>/crm/lead/details/<?= htmlspecialchars($lead['BITRIX_ID']) ?>/" target="_blank">Открыть</a>
+                    <?php if (!empty($lead['BITRIX_ID'])): ?>
+                        <a href="https://<?= h($bitrix24_domain) ?>/crm/lead/details/<?= h($lead['BITRIX_ID']) ?>/" target="_blank">Открыть</a>
                     <?php else: ?>—<?php endif; ?>
                 </td>
             </tr>

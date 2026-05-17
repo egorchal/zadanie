@@ -93,7 +93,6 @@ header nav ul li.btn a:hover,
     background: #a02604;
 }
 
-/* Секция с презентацией */
 .hero {
     padding-bottom: 100px;
     position: relative;
@@ -145,7 +144,6 @@ header nav ul li.btn a:hover,
     right: 0;
 }
 
-/* Секция с играми */
 .trending {
     padding-top: 50px;
 }
@@ -554,4 +552,18 @@ input[type="number"] {
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
 	display: none;
+}
+
+.feedback .container form div select[name="source"]{
+background: #2C2420;
+  border-radius: 10px;
+  border: 0.6px solid #CECECE;
+  display: block;
+  width: 90%;
+  padding: 15px 10px;
+  outline: none;
+  color: #fff;
+  margin-top: 7px;
+  margin-bottom: 20px;
+
 }

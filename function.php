@@ -1,18 +1,64 @@
 <?php
 /**
- * Возвращает базовый URL вебхука, чтобы подставлять разные методы REST API
+ * Возвращает URL вебхука из .env.
  */
-function getBitrix24RestUrl(string $method): string
+function getBitrix24WebhookUrl(): string
 {
-    $webhookUrl = $_ENV['BITRIX24_WEBHOOKTASK'];
-    $parsed = parse_url($webhookUrl);
-    // Убираем последний сегмент с методом (crm.lead.add.json)
-    $basePath = preg_replace('#/[^/]+\.json$#', '', $parsed['path']);
-    return $parsed['scheme'] . '://' . $parsed['host'] . $basePath . '/' . $method . '.json';
+    $webhookUrl = trim($_ENV['BITRIX24_WEBHOOK'] ?? $_ENV['BITRIX24_WEBHOOKTASK'] ?? '');
+
+    if ($webhookUrl === '') {
+        throw new RuntimeException('Не задан BITRIX24_WEBHOOK в .env');
+    }
+
+    return $webhookUrl;
 }
 
 /**
- * Логирование запросов к API
+ * Возвращает базовый URL вебхука, чтобы подставлять разные методы REST API.
+ */
+function getBitrix24RestUrl(string $method): string
+{
+    $parsed = parse_url(getBitrix24WebhookUrl());
+
+    if (
+        !is_array($parsed) ||
+        empty($parsed['scheme']) ||
+        empty($parsed['host']) ||
+        empty($parsed['path'])
+    ) {
+        throw new RuntimeException('Некорректный URL вебхука Bitrix24');
+    }
+
+    $basePath = preg_replace('#/[^/]+\.json$#', '', $parsed['path']);
+
+    return $parsed['scheme'] . '://' . $parsed['host'] . $basePath . '/' . $method . '.json';
+}
+
+function maskSensitiveUrl(string $url): string
+{
+    return preg_replace('#(/rest/[^/]+/)[^/]+/#', '$1***/', $url) ?? $url;
+}
+
+function maskBitrixLogData(array $data): array
+{
+    $sensitiveKeys = ['TITLE', 'NAME', 'PHONE', 'EMAIL', 'COMMENTS', 'DESCRIPTION', 'OPPORTUNITY'];
+
+    foreach ($data as $key => $value) {
+        if (in_array(strtoupper((string)$key), $sensitiveKeys, true)) {
+            $data[$key] = '[hidden]';
+            continue;
+        }
+
+        if (is_array($value)) {
+            $data[$key] = maskBitrixLogData($value);
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * Логирование запросов к API без раскрытия токенов и персональных данных.
  */
 function logRequest(string $type, string $url, $params = null, $response = null, ?string $error = null): void
 {
@@ -20,22 +66,27 @@ function logRequest(string $type, string $url, $params = null, $response = null,
     if (!is_dir($logDir)) {
         mkdir($logDir, 0755, true);
     }
+
     $file = $type === 'bitrix' ? 'log_bitrix.log' : 'log_public_api.log';
     $date = date('Y-m-d H:i:s');
     $entry = "[$date] " . ($error ? "ERROR: $error" : "SUCCESS") . PHP_EOL;
-    $entry .= "URL: $url" . PHP_EOL;
+    $entry .= 'URL: ' . ($type === 'bitrix' ? maskSensitiveUrl($url) : $url) . PHP_EOL;
+
     if ($params) {
-        $entry .= "Request: " . (is_array($params) ? json_encode($params, JSON_UNESCAPED_UNICODE) : $params) . PHP_EOL;
+        $safeParams = $type === 'bitrix' && is_array($params) ? maskBitrixLogData($params) : $params;
+        $entry .= 'Request: ' . (is_array($safeParams) ? json_encode($safeParams, JSON_UNESCAPED_UNICODE) : $safeParams) . PHP_EOL;
     }
+
     if ($response) {
-        $entry .= "Response: " . (is_array($response) ? json_encode($response, JSON_UNESCAPED_UNICODE) : $response) . PHP_EOL;
+        $entry .= 'Response: ' . (is_array($response) ? json_encode($response, JSON_UNESCAPED_UNICODE) : $response) . PHP_EOL;
     }
+
     $entry .= str_repeat('-', 50) . PHP_EOL;
-    file_put_contents($logDir . '/' . $file, $entry, FILE_APPEND);
+    file_put_contents($logDir . '/' . $file, $entry, FILE_APPEND | LOCK_EX);
 }
 
 /**
- * Получение и кеширование курсов валют (публичное API ЦБ РФ)
+ * Получение и кеширование курсов валют (публичное API ЦБ РФ).
  */
 function getCurrencyRates(): ?array
 {
@@ -89,9 +140,8 @@ function getCurrencyRates(): ?array
 
     return null;
 }
-
 /**
- * Отправка запроса к Bitrix24 REST API
+ * Отправка запроса к Bitrix24 REST API.
  */
 function callBitrix24Api(string $method, array $params = []): array
 {
@@ -127,7 +177,7 @@ function callBitrix24Api(string $method, array $params = []): array
 }
 
 /**
- * Получить список полей лида
+ * Получить список полей лида.
  */
 function getLeadFields(): array
 {
@@ -136,33 +186,33 @@ function getLeadFields(): array
 }
 
 /**
- * Создать задачу в Битрикс24
+ * Создать задачу в Битрикс24.
  */
 function createBitrix24Task(int $leadId, array $leadData): bool
 {
     $responsibleId = (int)($_ENV['BITRIX24_RESPONSIBLE_ID'] ?? 0);
     if (!$responsibleId) {
-        return false; // ответственный не задан
+        logRequest('bitrix', 'task.item.add', null, null, 'Не задан BITRIX24_RESPONSIBLE_ID в .env');
+        return false;
     }
 
     $title = 'Обработать лид #' . $leadId . ' (' . ($leadData['NAME'] ?? '') . ')';
     $description = "Лид создан автоматически.\n";
-    $description .= "Имя: " . ($leadData['NAME'] ?? '') . "\n";
-    $description .= "Телефон: " . ($leadData['PHONE'] ?? '') . "\n";
-    $description .= "Email: " . ($leadData['EMAIL'] ?? '') . "\n";
-    $description .= "Сумма: " . ($leadData['AMOUNT_RUB'] ?? 'не указана') . " руб.\n";
-    $description .= "Источник: " . ($leadData['SOURCE'] ?? '') . "\n";
-    $description .= "Комментарий: " . ($leadData['COMMENTS'] ?? '');
+    $description .= 'Имя: ' . ($leadData['NAME'] ?? '') . "\n";
+    $description .= 'Телефон: ' . ($leadData['PHONE'] ?? '') . "\n";
+    $description .= 'Email: ' . ($leadData['EMAIL'] ?? '') . "\n";
+    $description .= 'Сумма: ' . (($leadData['AMOUNT_RUB'] ?? '') ?: 'не указана') . " руб.\n";
+    $description .= 'Источник: ' . ($leadData['SOURCE'] ?? '') . "\n";
+    $description .= 'Комментарий: ' . ($leadData['COMMENTS'] ?? '');
 
-    $taskParams = [
+    $result = callBitrix24Api('task.item.add', [
         'fields' => [
             'TITLE' => $title,
             'RESPONSIBLE_ID' => $responsibleId,
             'DESCRIPTION' => $description,
-            'UF_CRM_TASK' => ['L_' . $leadId], // привязка к лиду
-        ]
-    ];
+            'UF_CRM_TASK' => ['L_' . $leadId],
+        ],
+    ]);
 
-    $result = callBitrix24Api('task.item.add', $taskParams);
     return $result['success'];
 }

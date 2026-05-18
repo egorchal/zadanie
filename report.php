@@ -11,7 +11,16 @@ if (!function_exists('h')) {
     }
 }
 
-$bitrix24_domain = $_ENV['BITRIX24_WEBHOOK_LEAD'];
+
+
+$bitrix24_domain = trim($_ENV['BITRIX24_DOMAIN'] ?? '');
+if ($bitrix24_domain === '') {
+    $bitrix24_domain = trim($_ENV['BITRIX24_WEBHOOK'] ?? '');
+}
+if (str_contains($bitrix24_domain, '://')) {
+    $bitrix24_domain = parse_url($bitrix24_domain, PHP_URL_HOST) ?: '';
+}
+$bitrix24_domain = trim($bitrix24_domain, " \t\n\r\0\x0B/");
 
 $rates = getCurrencyRates();
 
@@ -135,7 +144,7 @@ sort($sources);
                 <td><?= !empty($lead['ERROR']) ? h($lead['ERROR']) : '—' ?></td>
                 <td>
                     <?php if (!empty($lead['BITRIX_ID'])): ?>
-                        <a href="https://<?= h($bitrix24_domain) ?>/crm/lead/details/<?= h($lead['BITRIX_ID']) ?>/" target="_blank">Открыть</a>
+                        <a href="https://<?= h($bitrix24_domain) ?>crm/lead/details/<?= h($lead['BITRIX_ID']) ?>/" target="_blank">Открыть</a>
                     <?php else: ?>—<?php endif; ?>
                 </td>
             </tr>

@@ -466,17 +466,21 @@ header nav ul li.btn a:hover,
 }
 
 .feedback form input,
-.feedback form textarea {
+.feedback form textarea,
+.feedback form select {
     background: #2C2420;
     border-radius: 10px;
     border: 0.6px solid #CECECE;
     display: block;
-    width: 90%;
+    width: 100%;
+    box-sizing: border-box;
     padding: 15px 10px;
     outline: none;
     color: #fff;
     margin-top: 7px;
     margin-bottom: 20px;
+    font: inherit;
+    min-height: 52px;
 }
 
 .feedback form .one-line {
@@ -554,16 +558,32 @@ input[type="number"]::-webkit-inner-spin-button {
 	display: none;
 }
 
-.feedback .container form div select[name="source"]{
-background: #2C2420;
-  border-radius: 10px;
-  border: 0.6px solid #CECECE;
-  display: block;
-  width: 90%;
-  padding: 15px 10px;
-  outline: none;
-  color: #fff;
-  margin-top: 7px;
-  margin-bottom: 20px;
+.page-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0;
+}
 
+.page-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 6px;
+    background: #25211D;
+    color: #fff;
+    text-decoration: none;
+    transition: all 300ms ease;
+}
+
+.page-actions a:hover {
+    background: #DC7000;
+    color: #fff;
+    text-decoration: none;
+}
+
+.page-actions + p {
+    display: none;
 }

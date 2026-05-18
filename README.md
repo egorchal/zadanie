@@ -18,14 +18,14 @@ composer install
 3. Скопируйте URL webhook. Обычно он выглядит так:
 
 ```text
-https://example.bitrix24.ru/rest/<USER_ID>/<TOKEN>/crm.lead.add.json
+https://example.bitrix24.ru/rest/<USER_ID>/<TOKEN>
 ```
 
 4. Создайте файл `.env` на основе `.env.example`.
 5. Заполните переменные:
 
 ```dotenv
-BITRIX24_WEBHOOK=https://example.bitrix24.ru/rest/<USER_ID>/<TOKEN>/crm.lead.add.json
+BITRIX24_WEBHOOK=https://example.bitrix24.ru/rest/<USER_ID>/<TOKEN>
 BITRIX24_RESPONSIBLE_ID=1
 BITRIX24_DOMAIN=example.bitrix24.ru
 ```
@@ -42,7 +42,7 @@ BITRIX24_WEBHOOK
 
 Чтение выполняется в `function.php` через функцию `getBitrix24WebhookUrl()`. В репозиторий нужно добавлять только `.env.example`; реальный `.env` содержит секретный токен и не должен попадать в Git.
 
-Для построения ссылок на лиды в отчете также нужен домен Bitrix24. В `.env.example` он указан как `BITRIX24_DOMAIN`, но в текущем `report.php` читается переменная `BITRIX24_WEBHOOK_LEAD`. В production-версии это стоит унифицировать.
+Для построения ссылок на лиды в отчете домен берется из `BITRIX24_DOMAIN`. Если переменная не задана, `report.php` достает домен из `BITRIX24_WEBHOOK`.
 
 ## Использованные методы Bitrix24
 
@@ -50,6 +50,7 @@ BITRIX24_WEBHOOK
 
 - `crm.lead.add` - создание лида из данных формы.
 - `crm.lead.fields` - получение списка полей лида, используется на странице `field.php`.
+- `crm.status.list` - получение источников лидов (`ENTITY_ID = SOURCE`) для поля "Источник" в форме.
 - `task.item.add` - создание задачи ответственному сотруднику после успешного создания лида.
 
 Общий вызов API реализован в `callBitrix24Api()`. Метод передается строкой, например `crm.lead.add`, а URL собирается функцией `getBitrix24RestUrl()`.

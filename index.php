@@ -1,3 +1,26 @@
+<?php
+require 'vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
+require 'function.php';
+
+if (!function_exists('h')) {
+    function h($value): string
+    {
+        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+
+$leadSources = getLeadSources();
+$fallbackSources = [
+    ['STATUS_ID' => 'CALL', 'NAME' => 'Звонок'],
+    ['STATUS_ID' => 'EMAIL', 'NAME' => 'Электронная почта'],
+    ['STATUS_ID' => 'WEB', 'NAME' => 'Веб-сайт'],
+    ['STATUS_ID' => 'ADVERTISING', 'NAME' => 'Реклама'],
+    ['STATUS_ID' => 'PARTNER', 'NAME' => 'Существующий клиент'],
+];
+$sources = !empty($leadSources) ? $leadSources : $fallbackSources;
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -29,12 +52,14 @@
                     </div>
                     <div>
                         <label>Источник</label>
-                        <select type="source" name="source" style="background: #2C2420; border-radius: 10px;border: 0.6px solid #CECECE;display: block;width: 90%; padding: 15px 10px;outline: none; color: #fff; margin-top: 7px;margin-bottom: 20px;">
-                            <option value="Звонок">Звонок</option>
-                            <option value="Электронная почта">Электронная почта</option>
-                            <option value="Веб-сайт">Веб-сайт</option>
-                            <option value="Реклама">Реклама</option>
-                            <option value="Существующий клиент">Существующий клиент</option>
+                        <select name="source" required>
+                            <?php foreach ($sources as $source): ?>
+                                <?php
+                                $sourceId = $source['STATUS_ID'] ?? $source['ID'] ?? '';
+                                $sourceName = $source['NAME'] ?? $source['TITLE'] ?? $sourceId;
+                                ?>
+                                <option value="<?= h($sourceId) ?>"><?= h($sourceName) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div>

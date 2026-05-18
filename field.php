@@ -19,9 +19,14 @@ $fields = getLeadFields();
     <meta charset="UTF-8">
     <title>Поля лида Bitrix24</title>
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/field.css">
 </head>
 <body>
 <div class="feedback">
+    <div class="page-actions">
+        <a href="index.php">Назад к форме</a>
+        <a href="report.php">Отчет</a>
+    </div>
     <p><a href="index.php">← Назад к форме</a> | <a href="report.php">Отчёт</a></p>
     <div class="container">
         <h2>Список полей лида (crm.lead.fields)</h2>

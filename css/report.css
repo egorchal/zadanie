@@ -10,6 +10,35 @@ a:hover { color: #d0a6ff; }
 
 h1 { color: #fff; margin-bottom: 0.3em; }
 
+.page-actions {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0 20px;
+}
+
+.page-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    background: #25211D;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 250ms ease;
+}
+
+.page-actions a:hover {
+    background: #DC7000;
+    color: #fff;
+}
+
+.page-actions + p {
+    display: none;
+}
+
 .stats {
     display: flex;
     gap: 15px;

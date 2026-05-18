@@ -17,7 +17,7 @@ $bitrix24_domain = trim($_ENV['BITRIX24_DOMAIN'] ?? '');
 if ($bitrix24_domain === '') {
     $bitrix24_domain = trim($_ENV['BITRIX24_WEBHOOK'] ?? '');
 }
-if (str_contains($bitrix24_domain, '://')) {
+if (strpos($bitrix24_domain, '://') !== false) {
     $bitrix24_domain = parse_url($bitrix24_domain, PHP_URL_HOST) ?: '';
 }
 $bitrix24_domain = trim($bitrix24_domain, " \t\n\r\0\x0B/");
@@ -70,6 +70,10 @@ sort($sources);
 </head>
 <body>
 <h1>Отчёт по заявкам</h1>
+<div class="page-actions">
+    <a href="index.php">Назад к форме</a>
+    <a href="field.php">Поля лида</a>
+</div>
 <p><a href="index.php">← Вернуться к форме</a></p>
 
 <div class="stats">
@@ -144,7 +148,7 @@ sort($sources);
                 <td><?= !empty($lead['ERROR']) ? h($lead['ERROR']) : '—' ?></td>
                 <td>
                     <?php if (!empty($lead['BITRIX_ID'])): ?>
-                        <a href="https://<?= h($bitrix24_domain) ?>crm/lead/details/<?= h($lead['BITRIX_ID']) ?>/" target="_blank">Открыть</a>
+                        <a href="https://<?= h($bitrix24_domain) ?>/crm/lead/details/<?= h($lead['BITRIX_ID']) ?>/" target="_blank">Открыть</a>
                     <?php else: ?>—<?php endif; ?>
                 </td>
             </tr>

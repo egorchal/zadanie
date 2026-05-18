@@ -4,7 +4,7 @@
  */
 function getBitrix24WebhookUrl(): string
 {
-    $webhookUrl = trim($_ENV['BITRIX24_WEBHOOK'] ?? $_ENV['BITRIX24_WEBHOOKTASK'] ?? '');
+    $webhookUrl = trim($_ENV['BITRIX24_WEBHOOK'] ?? '');
 
     if ($webhookUrl === '') {
         throw new RuntimeException('Не задан BITRIX24_WEBHOOK в .env');
@@ -29,7 +29,7 @@ function getBitrix24RestUrl(string $method): string
         throw new RuntimeException('Некорректный URL вебхука Bitrix24');
     }
 
-    $basePath = preg_replace('#/[^/]+\.json$#', '', $parsed['path']);
+    $basePath = preg_replace('#/[^/]+\.json$#', '', rtrim($parsed['path'], '/'));
 
     return $parsed['scheme'] . '://' . $parsed['host'] . $basePath . '/' . $method . '.json';
 }
@@ -182,6 +182,17 @@ function callBitrix24Api(string $method, array $params = []): array
 function getLeadFields(): array
 {
     $result = callBitrix24Api('crm.lead.fields');
+    return $result['success'] ? ($result['data']['result'] ?? []) : [];
+}
+
+function getLeadSources(): array
+{
+    $result = callBitrix24Api('crm.status.list', [
+        'filter' => [
+            'ENTITY_ID' => 'SOURCE',
+        ],
+    ]);
+
     return $result['success'] ? ($result['data']['result'] ?? []) : [];
 }
 

@@ -10,7 +10,7 @@ body {
     font-weight: 400;
     color: #fff;
     font-size: 16px;
-    background: #000;
+    background: #050505;
 }
 
 a {
@@ -28,7 +28,7 @@ img {
 }
 
 .container {
-    width: 1400px;
+    width: min(1400px, calc(100% - 40px));
     margin: 0 auto;
 }
 
@@ -424,14 +424,10 @@ header nav ul li.btn a:hover,
 }
 
 .feedback {
-    padding: 70px 0;
-    background: #050505;
+    padding: 36px 0;
+    background: #ffffff;
 }
-.feedback .container div{
-    margin: 80px auto;
-    width: 600px;
-}
-.feedback .container div table{
+.feedback .container > div table{
     margin: 80px auto;
     width: 600px;
 }
@@ -447,8 +443,8 @@ header nav ul li.btn a:hover,
 }
 
 .feedback form {
-    margin: 80px auto;
-    width: 600px;
+    margin: 32px auto;
+    width: min(600px, 100%);
 }
 
 .feedback form .inline {
@@ -463,20 +459,26 @@ header nav ul li.btn a:hover,
 .feedback form label {
     color: #4F4F4F;
     font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
 }
 
 .feedback form input,
-.feedback form textarea {
+.feedback form textarea,
+.feedback form select {
     background: #2C2420;
     border-radius: 10px;
     border: 0.6px solid #CECECE;
     display: block;
-    width: 90%;
-    padding: 15px 10px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 10px;
     outline: none;
     color: #fff;
-    margin-top: 7px;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font: inherit;
+    min-height: 44px;
 }
 
 .feedback form .one-line {
@@ -552,18 +554,4 @@ input[type="number"] {
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
 	display: none;
-}
-
-.feedback .container form div select[name="source"]{
-background: #2C2420;
-  border-radius: 10px;
-  border: 0.6px solid #CECECE;
-  display: block;
-  width: 94%;
-  padding: 15px 10px;
-  outline: none;
-  color: #fff;
-  margin-top: 7px;
-  margin-bottom: 20px;
-
 }

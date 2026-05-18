@@ -12,14 +12,7 @@ if (!function_exists('h')) {
 }
 
 $leadSources = getLeadSources();
-$fallbackSources = [
-    ['STATUS_ID' => 'CALL', 'NAME' => 'Звонок'],
-    ['STATUS_ID' => 'EMAIL', 'NAME' => 'Электронная почта'],
-    ['STATUS_ID' => 'WEB', 'NAME' => 'Веб-сайт'],
-    ['STATUS_ID' => 'ADVERTISING', 'NAME' => 'Реклама'],
-    ['STATUS_ID' => 'PARTNER', 'NAME' => 'Существующий клиент'],
-];
-$sources = !empty($leadSources) ? $leadSources : $fallbackSources;
+$sources = $leadSources;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
